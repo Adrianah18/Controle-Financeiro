@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View,TouchableOpacity, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import { TextInputMask } from 'react-native-masked-text';
 
 const MetasEconomiaScreen = () => {
@@ -8,7 +17,7 @@ const MetasEconomiaScreen = () => {
     nome: '',
     valorTotal: '',
     dataLimite: '',
-    dataInicio: '', // Adicionado campo para a data de início
+    dataInicio: '',
     valorEconomizado: 0,
     contribuicao: '',
   });
@@ -21,8 +30,9 @@ const MetasEconomiaScreen = () => {
       return;
     }
 
-    const novaMetaComContribuicao = { ...novaMeta, contribuicao: 0 };
-
+    const valorTotalNumerico = parseFloat(novaMeta.valorTotal.replace('R$', '').replace('.', '').replace(',', '.'));
+    const novaMetaComContribuicao = { ...novaMeta, contribuicao: 0, valorTotal: valorTotalNumerico };
+    
     if (indiceEdicao !== null) {
       const novasMetas = [...metas];
       novasMetas[indiceEdicao] = novaMetaComContribuicao;
@@ -47,13 +57,29 @@ const MetasEconomiaScreen = () => {
   const handleAdicionarContribuicao = (index) => {
     const novasMetas = [...metas];
     const contribuicaoNumerica = parseFloat(novasMetas[index].contribuicao);
-
+  
     if (isNaN(contribuicaoNumerica)) {
       Alert.alert('Valor inválido', 'Insira um valor numérico válido para a contribuição.');
       return;
     }
-
+  
     novasMetas[index].valorEconomizado += contribuicaoNumerica;
+  
+    const valorTotalNumerico = parseFloat(novasMetas[index].valorTotal);
+  
+    if (!isNaN(valorTotalNumerico) && valorTotalNumerico > 0) {
+      novasMetas[index].progresso = (novasMetas[index].valorEconomizado / valorTotalNumerico) * 100;
+    } else {
+      novasMetas[index].progresso = 0;
+    }
+  
+    console.log('Metas antes da atualização:', metas);
+    console.log('Índice:', index);
+    console.log('Contribuição Numerica:', contribuicaoNumerica);
+    console.log('Valor Total Numerico:', valorTotalNumerico);
+    console.log('Valor Economizado:', novasMetas[index].valorEconomizado);
+    console.log('Progresso:', novasMetas[index].progresso);
+  
     setMetas(novasMetas);
     setMensagemContribuicao('Contribuição adicionada');
   };
@@ -71,29 +97,22 @@ const MetasEconomiaScreen = () => {
     setMensagemContribuicao('Meta excluída');
   };
 
-  const calcularProgresso = (meta) => {
-    const valorTotalNumerico = parseFloat(meta.valorTotal);
-    const valorEconomizadoNumerico = parseFloat(meta.valorEconomizado);
-
-    if (!isNaN(valorTotalNumerico) && !isNaN(valorEconomizadoNumerico)) {
-      return (valorEconomizadoNumerico / valorTotalNumerico) * 100;
-    }
-
-    return 0;
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Metas de Economia</Text>
       <View style={styles.form}>
-        <Text style={styles.label}>Nome da Meta<Text style={styles.asterisco}>*</Text></Text>
+        <Text style={styles.label}>
+          Nome da Meta<Text style={styles.asterisco}>*</Text>
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Digite o nome da meta"
           value={novaMeta.nome}
           onChangeText={(text) => setNovaMeta({ ...novaMeta, nome: text })}
         />
-        <Text style={styles.label}>Valor Total<Text style={styles.asterisco}>*</Text></Text>
+        <Text style={styles.label}>
+          Valor Total<Text style={[styles.asterisco, styles.redText]}>*</Text>
+        </Text>
         <TextInputMask
           style={styles.input}
           type={'money'}
@@ -108,7 +127,9 @@ const MetasEconomiaScreen = () => {
           onChangeText={(text) => setNovaMeta({ ...novaMeta, valorTotal: text })}
           placeholder="Digite o valor total"
         />
-        <Text style={styles.label}>Data Limite<Text style={styles.asterisco}>*</Text></Text>
+        <Text style={styles.label}>
+          Data Limite<Text style={styles.asterisco}>*</Text>
+        </Text>
         <TextInputMask
           style={styles.input}
           type={'datetime'}
@@ -119,7 +140,9 @@ const MetasEconomiaScreen = () => {
           onChangeText={(text) => setNovaMeta({ ...novaMeta, dataLimite: text })}
           placeholder="MM/AAAA"
         />
-        <Text style={styles.label}>Data de Início<Text style={styles.asterisco}>*</Text></Text>
+        <Text style={styles.label}>
+          Data de Início<Text style={styles.asterisco}>*</Text>
+        </Text>
         <TextInputMask
           style={styles.input}
           type={'datetime'}
@@ -134,16 +157,20 @@ const MetasEconomiaScreen = () => {
       </View>
 
       {/* Lista de Metas de Economia */}
-      
+
       <Text style={styles.heading}>Lista de Metas de Economia:</Text>
       {metas.map((item, index) => (
         <View key={index} style={styles.listItem}>
           <Text style={styles.metaDetail}>Nome: {item.nome}</Text>
-          <Text style={styles.metaDetail}>Valor Total: R$ {item.valorTotal}</Text>
+          <Text style={[styles.metaDetail, styles.redText]}>Valor Total: R$ {item.valorTotal}</Text>
           <Text style={styles.metaDetail}>Data Limite: {item.dataLimite}</Text>
           <Text style={styles.metaDetail}>Data de Início: {item.dataInicio}</Text>
-          <Text style={styles.metaDetail}>Valor Economizado: R$ {item.valorEconomizado}</Text>
-          <Text style={styles.metaDetail}>Progresso: {calcularProgresso(item).toFixed(2)}%</Text>
+          <Text style={[styles.metaDetail, styles.greenText]}>
+            Valor Economizado: R$ {item.valorEconomizado}
+          </Text>
+          <Text style={styles.progressText}>
+            Progresso: {item.progresso ? item.progresso.toFixed(2) : '0.00'}%
+          </Text>
           <TextInput
             style={styles.input}
             placeholder="Contribuição"
@@ -156,7 +183,10 @@ const MetasEconomiaScreen = () => {
             }}
             keyboardType="numeric"
           />
-         <TouchableOpacity onPress={() => handleAdicionarContribuicao(index)} style={styles.touchableOpacity}>
+          <TouchableOpacity
+            onPress={() => handleAdicionarContribuicao(index)}
+            style={styles.touchableOpacity}
+          >
             <View style={styles.editButton}>
               <Text style={styles.textoBotaoAcao}>Adicionar Contribuição</Text>
             </View>
@@ -173,28 +203,39 @@ const MetasEconomiaScreen = () => {
           </TouchableOpacity>
         </View>
       ))}
-      {mensagemContribuicao ? <Text style={styles.mensagem}>{mensagemContribuicao}</Text> : null}
+      {mensagemContribuicao ? (
+        <Text style={[styles.mensagem, styles.redText]}>{mensagemContribuicao}</Text>
+      ) : null}
     </ScrollView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0, 128, 0, 0.2)',
+  },
+  redText: {
+    color: 'red',
+  },
+  greenText: {
+    color: 'green',
   },
   heading: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
   },
-  
   metaDetail: {
     marginBottom: 5,
+    fontWeight: 'bold',
   },
   form: {
-    marginTop: 16,
-    marginBottom: 16,
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
@@ -210,16 +251,17 @@ const styles = StyleSheet.create({
     color: '#333333',
   },
   listItem: {
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    paddingBottom: 8,
+    backgroundColor: '#ffffff',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
   },
   asterisco: {
     color: 'red',
     marginLeft: 2,
   },
   mensagem: {
-    color: 'red',
+    fontWeight: 'bold',
   },
   touchableOpacity: {
     marginTop: 10,
@@ -239,6 +281,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  progressText: {
+    color: '#ac9437',  // Cor desejada para o progresso
     fontWeight: 'bold',
   },
 });

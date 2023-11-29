@@ -1,8 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
-
+import { useNavigation } from '@react-navigation/native'; // Adiciona esta linha
+import ExpenseTracker from '../screens/ExpenseTracker'; // Certifique-se de que o caminho está correto
 
 const HomePage = () => {
+  const navigation = useNavigation(); // Adiciona esta linha
+
+  const navigateToExpenseTracker = () => {
+    navigation.navigate('Fixas'); // Nome da tela no Navigator
+  };
+
   return (
     <ImageBackground
       source={require('../screens/siri.png')}
@@ -11,7 +18,7 @@ const HomePage = () => {
       <View style={styles.container}>
         <Text style={styles.title}>Controle Financeiro</Text>
         <Text style={styles.message}>Tenha controle total das suas finanças.</Text>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={navigateToExpenseTracker}>
           <Text style={styles.buttonText}>Comece agora</Text>
         </TouchableOpacity>
       </View>
@@ -35,19 +42,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 44,
     fontWeight: 'bold',
-    marginBottom: 400,
-    color: '#fff', // Cor do texto
+    marginBottom: 350,
+    color: '#2E4623', // Cor do texto
   },
   message: {
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 20,
-    color: '#fff', // Cor do texto
+    color: '#2E4623', // Cor do texto
   },
   button: {
     backgroundColor: 'green',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 10,
+  
   },
   buttonText: {
     color: '#fff',

@@ -201,7 +201,7 @@ const DespesasVariaveisScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: 'rgba(0, 128, 0, 0.2)',
     padding: 20,
   },
   form: {
